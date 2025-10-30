@@ -1,17 +1,23 @@
 <script setup>
+import Navi from "../components/Navi.vue";
 </script>
 
 <template>
-    <div>
-        <h1>Home</h1>
+<div class="page home-page">
+<div class="sidebar">
+    <Navi />
+</div>
 
-        <RouterLink to="/network">Network</RouterLink>
-
-        <br />
-        <RouterLink to="/parallel">Parallel</RouterLink>
-        <br />
-    </div>
+<div class="chart-pane">
+  <p style="text-align: center; margin-top: 100px;">
+    Select the chart type on the left sidebar.
+  </p>
+</div>
+</div>
 </template>
 
 <style scoped>
+.home-page {
+  box-sizing: border-box;
+}
 </style>
