@@ -23,13 +23,20 @@ const axisColumns = [
 //   'Pop Condition',
   'Pop Characteristic',
   'Age Category',
-  'Breathing Category',
+//   'Breathing Category',
   'Slow breathing vs fast breathing vs both',
   'Duration of breating Category',
   'Outcome type',
 //   'Primary Outcome Category',
 //   'Secondary Outcome Category',
 ]
+
+const CATEGORY_PALETTE = [
+  "#5470C6", "#91CC75", "#EE6666", "#73C0DE", "#3BA272",
+  "#FC8452", "#9A60B4", "#EA7CCC", "#2f4554", "#61a0a8",
+  "#d48265", "#749f83", "#ca8622", "#bda29a", "#6e7074",
+  "#546570", "#c4ccd3"
+];
 
 // Load data
 onMounted(async () => {
@@ -62,13 +69,14 @@ const colorAttributeStats = computed(() => {
 
 // Generate colors for different groups
 const generateColors = (count) => {
-  const colors = []
-  const hStep = Math.round(5 / count);
-  for (let i = 0; i < count; i++) {
-    let c = echarts.color.modifyHSL('#5A94DF', hStep * i);
-    colors.push(c)
-  }
-  return colors
+//   const colors = []
+//   const hStep = Math.round(5 / count);
+//   for (let i = 0; i < count; i++) {
+//     let c = echarts.color.modifyHSL('#5A94DF', hStep * i);
+//     colors.push(c)
+//   }
+//   return colors
+    return CATEGORY_PALETTE.slice(0, count)
 }
 
 // Chart configuration
@@ -85,8 +93,48 @@ const chartOption = computed(() => {
   console.log("colorValues", colorValues);
   console.log("colors", colors);
   
-  // Prepare data for parallel chart
+  // Prepare axis configuration first
+  const axes = axisColumns.map(column => {
+    const values = data.value.map(item => item[column]).filter(val => val !== undefined && val !== null && val !== '')
+    const uniqueValues = [...new Set(values)]
+    
+    return {
+      dim: axisColumns.indexOf(column),
+      name: column,
+      type: 'category',
+      data: uniqueValues,
+      axisLabel: {
+        interval: 0,
+        rotate: 45,
+        fontSize: 10
+      }
+    }
+  })
+  
+  // Create mapping from values to indices for each axis
+  const valueToIndex = {}
+  axes.forEach((axis, axisIndex) => {
+    valueToIndex[axisIndex] = {}
+    axis.data.forEach((value, index) => {
+      valueToIndex[axisIndex][value] = index
+    })
+  })
+  
+  // Prepare data for parallel chart - convert values to indices
   const chartData = data.value.map(item => {
+    // const lineData = axisColumns.map((column, axisIndex) => {
+    //   const value = item[column] || 'N/A'
+    //   return valueToIndex[axisIndex][value] !== undefined ? valueToIndex[axisIndex][value] : 0
+    // })
+    // const colorValue = item[selectedColorAttribute.value] || 'Unknown'
+    // return {
+    //   value: lineData,
+    //   itemStyle: {
+    //     color: valueToColor[colorValue] || '#999'
+    //   },
+    //   // Store all attributes for tooltip
+    //   attributes: item
+    // }
     const d = []
     for (const column of axisColumns) {
       d.push(item[column] || 'N/A')
@@ -94,49 +142,39 @@ const chartOption = computed(() => {
     return d
   })
   console.log("chartData", chartData);
-  
-  // Prepare axis configuration
-  const axes = axisColumns.map(column => {
-    const values = data.value.map(item => item[column]).filter(val => val !== undefined && val !== null && val !== '')
-    const uniqueValues = [...new Set(values)]
-    
-    return {
-        dim: axisColumns.indexOf(column),
-        name: column,
-      type: 'category',
-      data: uniqueValues,
-    }
-  })
 
 
   console.log("axes", axes);
   
   return {
     grid: {
-      right: 200,
+      left: 50,
+      right: 50,
+      top: 80,
+      bottom: 50
     },
     tooltip: {
       trigger: 'item',
-    //   formatter: function(params) {
-    //     if (params.data && params.data.attributes) {
-    //       const attrs = params.data.attributes
-    //       let tooltipContent = '<div style="max-width: 300px;">'
-    //       tooltipContent += `<strong>${attrs.Title || 'N/A'}</strong><br/>`
-    //       tooltipContent += `<strong>Author:</strong> ${attrs.Author || 'N/A'}<br/>`
-    //       tooltipContent += `<strong>Year:</strong> ${attrs.Year || 'N/A'}<br/>`
-    //       tooltipContent += `<strong>Country:</strong> ${attrs.Country || 'N/A'}<br/>`
-    //       tooltipContent += `<strong>Journal:</strong> ${attrs.Journal || 'N/A'}<br/><br/>`
+      formatter: function(params) {
+        if (params.data && params.data.attributes) {
+          const attrs = params.data.attributes
+          let tooltipContent = '<div style="max-width: 300px;">'
+          tooltipContent += `<strong>${attrs.Title || 'N/A'}</strong><br/>`
+          tooltipContent += `<strong>Author:</strong> ${attrs.Author || 'N/A'}<br/>`
+          tooltipContent += `<strong>Year:</strong> ${attrs.Year || 'N/A'}<br/>`
+          tooltipContent += `<strong>Country:</strong> ${attrs.Country || 'N/A'}<br/>`
+          tooltipContent += `<strong>Journal:</strong> ${attrs.Journal || 'N/A'}<br/><br/>`
           
-    //       // Show all axis attributes
-    //       axisColumns.forEach(column => {
-    //         tooltipContent += `<strong>${column}:</strong> ${attrs[column] || 'N/A'}<br/>`
-    //       })
+          // Show all axis attributes
+          axisColumns.forEach(column => {
+            tooltipContent += `<strong>${column}:</strong> ${attrs[column] || 'N/A'}<br/>`
+          })
           
-    //       tooltipContent += '</div>'
-    //       return tooltipContent
-    //     }
-    //     return ''
-    //   }
+          tooltipContent += '</div>'
+          return tooltipContent
+        }
+        return ''
+      }
     },
 
     visualMap: {
@@ -145,26 +183,41 @@ const chartOption = computed(() => {
       categories: colorValues,
       dimension: 0,
       inRange: {
-        color: colorValues //['#d94e5d','#eac736','#50a3ba']
+        color: colors
       },
       outOfRange: {
-        color: ['#ccc'] //['#d94e5d','#eac736','#50a3ba']
+        color: ['#ccc']
       },
       top: 20,
+      right: 20,
       realtime: false
     },
 
     parallelAxis: axes,
     parallel: {
       layout: 'vertical',
+      left: '5%',
+      right: '15%',
+      top: '10%',
+      bottom: '10%'
     },
     series: {
       type: 'parallel',
-        inactiveOpacity: 0,
-        activeOpacity: 0.5,
-        progressive: 500,
-      smooth: true,
       data: chartData,
+      lineStyle: {
+        width: 1,
+        opacity: 0.7
+      },
+      emphasis: {
+        lineStyle: {
+          width: 3,
+          opacity: 1
+        }
+      },
+      inactiveOpacity: 0.3,
+      activeOpacity: 0.8,
+      progressive: 500,
+      smooth: true
     }
   }
 })
@@ -235,7 +288,9 @@ watch(selectedColorAttribute, () => {
 
 <style scoped>
 .parallel-page {
-    box-sizing: border-box;
+  display: flex;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
 .chart {
