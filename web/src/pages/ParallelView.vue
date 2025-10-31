@@ -27,29 +27,59 @@ const axisColumns = [
   'Slow breathing vs fast breathing vs both',
   'Duration of breating Category',
   'Outcome type',
+  'Intervention delivery mode',
+//   'Primary Outcome of interest',
 //   'Primary Outcome Category',
 //   'Secondary Outcome Category',
 ]
 
-const CATEGORY_PALETTE = [
-  "rgba(84, 112, 198, 1)",   // #5470C6
-  "rgba(145, 204, 117, 1)",  // #91CC75
-  "rgba(238, 102, 102, 1)",  // #EE6666
-  "rgba(115, 192, 222, 1)",  // #73C0DE
-  "rgba(59, 162, 114, 1)",   // #3BA272
-  "rgba(252, 132, 82, 1)",   // #FC8452
-  "rgba(154, 96, 180, 1)",   // #9A60B4
-  "rgba(234, 124, 204, 1)",  // #EA7CCC
-  "rgba(47, 69, 84, 1)",     // #2f4554
-  "rgba(97, 160, 168, 1)",   // #61a0a8
-  "rgba(212, 130, 101, 1)",  // #d48265
-  "rgba(116, 159, 131, 1)",  // #749f83
-  "rgba(202, 134, 34, 1)",   // #ca8622
-  "rgba(189, 162, 154, 1)",  // #bda29a
-  "rgba(110, 112, 116, 1)",  // #6e7074
-  "rgba(84, 101, 112, 1)",   // #546570
-  "rgba(196, 204, 211, 1)"   // #c4ccd3
+// Matplotlib Spectral colormap reference points (11 colors, adjusted for better visibility on white background)
+const SPECTRAL_COLORS = [
+  [158, 1, 66],      // Dark red
+  [213, 62, 79],     // Red
+  [244, 109, 67],    // Orange-red
+  [253, 174, 97],    // Orange
+  [220, 180, 90],    // Yellow (darkened for visibility)
+  [200, 190, 100],   // Light yellow (darkened for visibility)
+  [180, 200, 100],   // Yellow-green (darkened for visibility)
+  [171, 221, 164],   // Light green
+  [102, 194, 165],   // Green
+  [50, 136, 189],    // Blue
+  [94, 79, 162]      // Purple
 ];
+
+// Interpolate between two colors
+function interpolateColor(color1, color2, factor) {
+  const result = color1.slice();
+  for (let i = 0; i < 3; i++) {
+    result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
+  }
+  return result;
+}
+
+// Generate Spectral colors for given count
+function generateSpectralColors(count) {
+  if (count === 1) {
+    return [`rgba(${SPECTRAL_COLORS[5].join(', ')}, 1)`]; // Middle color
+  }
+
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    // Map index to position in the colormap (0 to 1)
+    const position = i / (count - 1);
+    // Map position to the SPECTRAL_COLORS array
+    const scaledPos = position * (SPECTRAL_COLORS.length - 1);
+    const lowerIndex = Math.floor(scaledPos);
+    const upperIndex = Math.min(lowerIndex + 1, SPECTRAL_COLORS.length - 1);
+    const factor = scaledPos - lowerIndex;
+
+    // Interpolate between the two nearest colors
+    const rgb = interpolateColor(SPECTRAL_COLORS[lowerIndex], SPECTRAL_COLORS[upperIndex], factor);
+    colors.push(`rgba(${rgb.join(', ')}, 1)`);
+  }
+
+  return colors;
+}
 
 // Load data
 onMounted(async () => {
@@ -80,16 +110,9 @@ const colorAttributeStats = computed(() => {
   }
 })
 
-// Generate colors for different groups
+// Generate colors for different groups using Spectral colormap
 const generateColors = (count) => {
-//   const colors = []
-//   const hStep = Math.round(5 / count);
-//   for (let i = 0; i < count; i++) {
-//     let c = echarts.color.modifyHSL('#5A94DF', hStep * i);
-//     colors.push(c)
-//   }
-//   return colors
-    return CATEGORY_PALETTE.slice(0, count)
+  return generateSpectralColors(count)
 }
 
 // Chart configuration
@@ -176,7 +199,7 @@ const chartOption = computed(() => {
     grid: {
       left: 100,
       right: 50,
-      top: 80,
+      top: 20,
       bottom: 50
     },
     tooltip: {
@@ -232,7 +255,7 @@ const chartOption = computed(() => {
     //   layout: 'vertical',
       left: '150',
       right: '5%',
-      top: '10%',
+      top: '50',
       bottom: '10%'
     },
     series: {
