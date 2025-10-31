@@ -155,7 +155,15 @@ const graphData = computed(() => {
 });
 
 const chartOption = computed(() => ({
-//   title: { text: selectedAttribute.value ? `Papers by ${selectedAttribute.value}` : "Papers" },
+  title: {
+    text: selectedAttribute.value ? `Papers by ${selectedAttribute.value}` : "Papers",
+    left: 10,
+    top: 10,
+    textStyle: {
+      fontSize: 18,
+      fontWeight: 'bold'
+    }
+  },
   tooltip: {
     trigger: "item",
     backgroundColor: "rgba(255, 255, 255, 0.95)",

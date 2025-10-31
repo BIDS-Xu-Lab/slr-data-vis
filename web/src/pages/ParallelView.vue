@@ -32,10 +32,23 @@ const axisColumns = [
 ]
 
 const CATEGORY_PALETTE = [
-  "#5470C6", "#91CC75", "#EE6666", "#73C0DE", "#3BA272",
-  "#FC8452", "#9A60B4", "#EA7CCC", "#2f4554", "#61a0a8",
-  "#d48265", "#749f83", "#ca8622", "#bda29a", "#6e7074",
-  "#546570", "#c4ccd3"
+  "rgba(84, 112, 198, 1)",   // #5470C6
+  "rgba(145, 204, 117, 1)",  // #91CC75
+  "rgba(238, 102, 102, 1)",  // #EE6666
+  "rgba(115, 192, 222, 1)",  // #73C0DE
+  "rgba(59, 162, 114, 1)",   // #3BA272
+  "rgba(252, 132, 82, 1)",   // #FC8452
+  "rgba(154, 96, 180, 1)",   // #9A60B4
+  "rgba(234, 124, 204, 1)",  // #EA7CCC
+  "rgba(47, 69, 84, 1)",     // #2f4554
+  "rgba(97, 160, 168, 1)",   // #61a0a8
+  "rgba(212, 130, 101, 1)",  // #d48265
+  "rgba(116, 159, 131, 1)",  // #749f83
+  "rgba(202, 134, 34, 1)",   // #ca8622
+  "rgba(189, 162, 154, 1)",  // #bda29a
+  "rgba(110, 112, 116, 1)",  // #6e7074
+  "rgba(84, 101, 112, 1)",   // #546570
+  "rgba(196, 204, 211, 1)"   // #c4ccd3
 ];
 
 // Load data
@@ -92,59 +105,70 @@ const chartOption = computed(() => {
   })
   console.log("colorValues", colorValues);
   console.log("colors", colors);
+  console.log("valueToColor", valueToColor);
   
+
   // Prepare axis configuration first
   const axes = axisColumns.map(column => {
     const values = data.value.map(item => item[column]).filter(val => val !== undefined && val !== null && val !== '')
     const uniqueValues = [...new Set(values)]
-    
+
+    // Sort values: normal values in ascending order, then "NS" and "??" at the end
+    const sortedValues = uniqueValues.sort((a, b) => {
+      const specialValues = ['NS', '??', 'N/A']
+      const aIsSpecial = specialValues.includes(a)
+      const bIsSpecial = specialValues.includes(b)
+
+      // If both are special or both are normal, sort alphabetically
+      if (aIsSpecial && bIsSpecial) {
+        return a.localeCompare(b)
+      }
+      // If only a is special, move it to the end
+      if (aIsSpecial) return 1
+      // If only b is special, move it to the end
+      if (bIsSpecial) return -1
+      // Both are normal values, sort ascending
+      return a.localeCompare(b)
+    })
+
     return {
       dim: axisColumns.indexOf(column),
       name: column,
       type: 'category',
-      data: uniqueValues,
+      data: sortedValues,
       axisLabel: {
         interval: 0,
         rotate: 45,
         fontSize: 10
-      }
+      },
+      nameLocation: 'start'
     }
   })
+  console.log("axes", axes);
   
-  // Create mapping from values to indices for each axis
-  const valueToIndex = {}
-  axes.forEach((axis, axisIndex) => {
-    valueToIndex[axisIndex] = {}
-    axis.data.forEach((value, index) => {
-      valueToIndex[axisIndex][value] = index
-    })
-  })
-  
+
   // Prepare data for parallel chart - convert values to indices
+  const colorDimension = axisColumns.indexOf(selectedColorAttribute.value)
+
   const chartData = data.value.map(item => {
-    // const lineData = axisColumns.map((column, axisIndex) => {
-    //   const value = item[column] || 'N/A'
-    //   return valueToIndex[axisIndex][value] !== undefined ? valueToIndex[axisIndex][value] : 0
-    // })
-    // const colorValue = item[selectedColorAttribute.value] || 'Unknown'
-    // return {
-    //   value: lineData,
-    //   itemStyle: {
-    //     color: valueToColor[colorValue] || '#999'
-    //   },
-    //   // Store all attributes for tooltip
-    //   attributes: item
-    // }
     const d = []
     for (const column of axisColumns) {
       d.push(item[column] || 'N/A')
     }
-    return d
+
+    // Add line color based on the selected attribute
+    const colorValue = item[selectedColorAttribute.value]
+    const lineColor = valueToColor[colorValue] || '#999'
+
+    return {
+      value: d,
+      lineStyle: {
+        color: lineColor
+      }
+    }
   })
   console.log("chartData", chartData);
-
-
-  console.log("axes", axes);
+  console.log("colorDimension", colorDimension);
   
   return {
     grid: {
@@ -181,16 +205,15 @@ const chartOption = computed(() => {
       show: true,
       type: 'piecewise',
       categories: colorValues,
-      dimension: 0,
       inRange: {
         color: colors
       },
-      outOfRange: {
-        color: ['#ccc']
-      },
       top: 20,
       left: 20,
-      realtime: false
+      textStyle: {
+        color: '#333'
+      },
+      orient: 'vertical'
     },
 
     parallelAxis: axes,
@@ -205,7 +228,7 @@ const chartOption = computed(() => {
       type: 'parallel',
       data: chartData,
       lineStyle: {
-        width: 1,
+        width: 0.5,
         opacity: 0.7
       },
       emphasis: {
@@ -214,8 +237,8 @@ const chartOption = computed(() => {
           opacity: 1
         }
       },
-      inactiveOpacity: 0.3,
-      activeOpacity: 0.8,
+      inactiveOpacity: 0.01,
+      activeOpacity: 1,
       progressive: 500,
       smooth: true
     }
