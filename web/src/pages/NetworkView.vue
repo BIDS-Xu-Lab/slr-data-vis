@@ -112,10 +112,10 @@ const graphData = computed(() => {
       category: "attribute",
       symbolSize: Math.max(12, Math.min(60, 10 + count * 2)),
       itemStyle: { color: valueColorMap.value.get(value) },
-      label: { show: showLabels.value },
-      labelStyle: {
-        fontSize: 14,
-        fontWeight: "bold",
+      label: {
+        show: showLabels.value,
+        fontSize: 16,
+        fontWeight: "bold"
       }
     });
   });
