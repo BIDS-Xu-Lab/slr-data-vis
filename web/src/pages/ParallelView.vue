@@ -196,6 +196,15 @@ const chartOption = computed(() => {
   console.log("colorDimension", colorDimension);
   
   return {
+    title: {
+      text: selectedColorAttribute.value ? `Parallel Coordinates colored by ${selectedColorAttribute.value}` : "Parallel Coordinates",
+      left: 10,
+      top: 10,
+      textStyle: {
+        fontSize: 18,
+        fontWeight: 'bold'
+      }
+    },
     grid: {
       left: 100,
       right: 50,
@@ -242,7 +251,7 @@ const chartOption = computed(() => {
       inRange: {
         color: colors
       },
-      top: 20,
+      top: 30,
       left: 20,
       textStyle: {
         color: '#333'
