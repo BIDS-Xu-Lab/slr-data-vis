@@ -164,7 +164,9 @@ const chartOption = computed(() => {
       value: d,
       lineStyle: {
         color: lineColor
-      }
+      },
+      // Store original item data for tooltip
+      itemData: item
     }
   })
   console.log("chartData", chartData);
@@ -177,29 +179,38 @@ const chartOption = computed(() => {
       top: 80,
       bottom: 50
     },
-    // tooltip: {
-    //   trigger: 'item',
-    //   formatter: function(params) {
-    //     if (params.data && params.data.attributes) {
-    //       const attrs = params.data.attributes
-    //       let tooltipContent = '<div style="max-width: 300px;">'
-    //       tooltipContent += `<strong>${attrs.Title || 'N/A'}</strong><br/>`
-    //       tooltipContent += `<strong>Author:</strong> ${attrs.Author || 'N/A'}<br/>`
-    //       tooltipContent += `<strong>Year:</strong> ${attrs.Year || 'N/A'}<br/>`
-    //       tooltipContent += `<strong>Country:</strong> ${attrs.Country || 'N/A'}<br/>`
-    //       tooltipContent += `<strong>Journal:</strong> ${attrs.Journal || 'N/A'}<br/><br/>`
-          
-    //       // Show all axis attributes
-    //       axisColumns.forEach(column => {
-    //         tooltipContent += `<strong>${column}:</strong> ${attrs[column] || 'N/A'}<br/>`
-    //       })
-          
-    //       tooltipContent += '</div>'
-    //       return tooltipContent
-    //     }
-    //     return ''
-    //   }
-    // },
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#ccc',
+      borderWidth: 1,
+      textStyle: {
+        color: '#333',
+        fontSize: 12
+      },
+      formatter: function(params) {
+        if (params.data && params.data.itemData) {
+          const item = params.data.itemData
+          let tooltipContent = '<div style="max-width: 350px; max-height: 400px; overflow-y: auto; overflow-x: hidden; word-wrap: break-word; white-space: normal;">'
+          tooltipContent += `<strong style="font-size: 14px;">${item.Title || 'N/A'}</strong><br/>`
+          tooltipContent += `<strong>Author:</strong> ${item.Author || 'N/A'}<br/>`
+          tooltipContent += `<strong>Year:</strong> ${item.Year || 'N/A'}<br/>`
+          tooltipContent += `<strong>Country:</strong> ${item.Country || 'N/A'}<br/>`
+          tooltipContent += `<strong>Journal:</strong> ${item.Journal || 'N/A'}<br/><br/>`
+
+          // Show all axis attributes
+          tooltipContent += '<div style="border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px;">'
+          axisColumns.forEach(column => {
+            tooltipContent += `<strong>${column}:</strong> ${item[column] || 'N/A'}<br/>`
+          })
+          tooltipContent += '</div>'
+
+          tooltipContent += '</div>'
+          return tooltipContent
+        }
+        return ''
+      }
+    },
 
     visualMap: {
       show: true,

@@ -173,25 +173,25 @@ const chartOption = computed(() => ({
       color: "#333",
       fontSize: 12
     },
-    extraCssText: "max-width: 300px; word-wrap: break-word; white-space: normal;",
+    extraCssText: "max-width: 350px; word-wrap: break-word; white-space: normal;",
     formatter: (params) => {
       if (params.data?.category === "paper") {
         const d = params.data.paper || {};
-        const lines = [
-          `- Author: ${d.Author ?? ""}`,
-          `- Year: ${d.Year ?? ""}`,
-          `- Journal: ${d.Journal ?? ""}`,
-          `- Title: ${d.Title ?? ""}`,
-          `- Study design: ${d.StudyDesign ?? ""}`,
-          `- Duration: ${d.Duration ?? ""}`
-        ];
-        return lines.join("<br/>");
+        let tooltipContent = '<div style="max-width: 350px; max-height: 400px; overflow-y: auto; overflow-x: hidden; word-wrap: break-word; white-space: normal;">'
+        tooltipContent += `<strong style="font-size: 14px;">${d.Title || 'N/A'}</strong><br/>`
+        tooltipContent += `<strong>Author:</strong> ${d.Author || 'N/A'}<br/>`
+        tooltipContent += `<strong>Year:</strong> ${d.Year || 'N/A'}<br/>`
+        tooltipContent += `<strong>Journal:</strong> ${d.Journal || 'N/A'}<br/>`
+        tooltipContent += `<strong>Study design:</strong> ${d.StudyDesign || 'N/A'}<br/>`
+        tooltipContent += `<strong>Duration:</strong> ${d.Duration || 'N/A'}<br/>`
+        tooltipContent += '</div>'
+        return tooltipContent;
       }
       if (params.data?.category === "attribute") {
         const attrName = selectedAttribute.value || "Attribute";
-        return `${attrName}: ${params.data.name}`;
+        return `<strong>${attrName}:</strong> ${params.data.name}`;
       }
-      if (params.dataType === "edge") return `${params.data.source} -> ${params.data.target}`;
+      if (params.dataType === "edge") return "";
       return params.name || "";
     }
   },
@@ -201,7 +201,11 @@ const chartOption = computed(() => ({
       layout: "force",
       roam: true,
       draggable: true,
-      force: { repulsion: 120, edgeLength: 80 },
+      force: { 
+        repulsion: 120, 
+        edgeLength: 80,
+        gravity: 0.3,
+      },
       data: graphData.value.nodes,
       edges: graphData.value.edges,
       lineStyle: { width: 1, opacity: 0.7 },
