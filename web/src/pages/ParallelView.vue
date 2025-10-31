@@ -148,34 +148,34 @@ const chartOption = computed(() => {
   
   return {
     grid: {
-      left: 50,
+      left: 100,
       right: 50,
       top: 80,
       bottom: 50
     },
-    tooltip: {
-      trigger: 'item',
-      formatter: function(params) {
-        if (params.data && params.data.attributes) {
-          const attrs = params.data.attributes
-          let tooltipContent = '<div style="max-width: 300px;">'
-          tooltipContent += `<strong>${attrs.Title || 'N/A'}</strong><br/>`
-          tooltipContent += `<strong>Author:</strong> ${attrs.Author || 'N/A'}<br/>`
-          tooltipContent += `<strong>Year:</strong> ${attrs.Year || 'N/A'}<br/>`
-          tooltipContent += `<strong>Country:</strong> ${attrs.Country || 'N/A'}<br/>`
-          tooltipContent += `<strong>Journal:</strong> ${attrs.Journal || 'N/A'}<br/><br/>`
+    // tooltip: {
+    //   trigger: 'item',
+    //   formatter: function(params) {
+    //     if (params.data && params.data.attributes) {
+    //       const attrs = params.data.attributes
+    //       let tooltipContent = '<div style="max-width: 300px;">'
+    //       tooltipContent += `<strong>${attrs.Title || 'N/A'}</strong><br/>`
+    //       tooltipContent += `<strong>Author:</strong> ${attrs.Author || 'N/A'}<br/>`
+    //       tooltipContent += `<strong>Year:</strong> ${attrs.Year || 'N/A'}<br/>`
+    //       tooltipContent += `<strong>Country:</strong> ${attrs.Country || 'N/A'}<br/>`
+    //       tooltipContent += `<strong>Journal:</strong> ${attrs.Journal || 'N/A'}<br/><br/>`
           
-          // Show all axis attributes
-          axisColumns.forEach(column => {
-            tooltipContent += `<strong>${column}:</strong> ${attrs[column] || 'N/A'}<br/>`
-          })
+    //       // Show all axis attributes
+    //       axisColumns.forEach(column => {
+    //         tooltipContent += `<strong>${column}:</strong> ${attrs[column] || 'N/A'}<br/>`
+    //       })
           
-          tooltipContent += '</div>'
-          return tooltipContent
-        }
-        return ''
-      }
-    },
+    //       tooltipContent += '</div>'
+    //       return tooltipContent
+    //     }
+    //     return ''
+    //   }
+    // },
 
     visualMap: {
       show: true,
@@ -189,15 +189,15 @@ const chartOption = computed(() => {
         color: ['#ccc']
       },
       top: 20,
-      right: 20,
+      left: 20,
       realtime: false
     },
 
     parallelAxis: axes,
     parallel: {
-      layout: 'vertical',
-      left: '5%',
-      right: '15%',
+    //   layout: 'vertical',
+      left: '150',
+      right: '5%',
       top: '10%',
       bottom: '10%'
     },
